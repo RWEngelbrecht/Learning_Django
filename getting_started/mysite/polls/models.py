@@ -7,7 +7,8 @@ class Question(models.Model):
         return self.question_text
 
     def was_published_recently(self):
-        return self.pub_date >= tz.now() - dt.timedelta(days=1)
+        now = tz.now()
+        return now >= self.pub_date >= now - dt.timedelta(days=1)
 
     question_text = models.CharField(max_length=200)
     pub_date = models.DateTimeField('date published')
