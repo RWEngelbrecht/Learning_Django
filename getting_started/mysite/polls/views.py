@@ -15,8 +15,14 @@ class IndexView(generic.ListView):
   context_object_name = 'latest_question_list'
 
   def get_queryset(self):
-    # returns QuerySet object
-    return Question.objects.filter(pub_date__lte=tz.now()).order_by('-pub_date')[:5]
+    questions = Question.objects.filter(pub_date__lte=tz.now()).order_by('-pub_date')
+
+    print(questions.choice_set.all())
+    for question in questions:
+      if question.choice_set.all().count() == 0:
+        questions = questions.exclude(pk=question.id)
+
+    return questions[:5]
 
 
 class DetailView(generic.DetailView):
@@ -27,7 +33,7 @@ class DetailView(generic.DetailView):
   template_name = 'polls/detail.html'
 
   def get_queryset(self):
-      return Question.objects.filter(pub_date__lte=tz.now())
+    return Question.objects.filter(pub_date__lte=tz.now())
 
 
 class ResultsView(generic.DetailView):
@@ -35,7 +41,7 @@ class ResultsView(generic.DetailView):
   template_name = 'polls/results.html'
 
   def get_queryset(self):
-      return Question.objects.filter(pub_date__lte=tz.now())
+    return Question.objects.filter(pub_date__lte=tz.now())
 
 
 def vote(request, question_id):

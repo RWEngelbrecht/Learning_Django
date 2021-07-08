@@ -4,7 +4,7 @@ from django.test import TestCase
 from django.utils import timezone as tz
 from django.urls import reverse
 
-from .models import Question
+from .models import Question, Choice
 
 def create_question(question_text, days=0) -> Question:
   """
@@ -16,6 +16,9 @@ def create_question(question_text, days=0) -> Question:
   time = tz.now() + dt.timedelta(days=days)
   return Question.objects.create(question_text=question_text, pub_date=time)
 
+
+def create_choice(choice_text, question) -> Choice:
+  return Choice.objects.create(question=question, choice_text=choice_text)
 
 class QuestionModelTests(TestCase):
 
@@ -50,6 +53,7 @@ class QuestionIndexViewTests(TestCase):
     Displays questions from the past
     """
     q = create_question("Does the past exist?", -30)
+    create_choice("Who knows", q)
     res = self.client.get(reverse('polls:index'))
     self.assertQuerysetEqual(res.context['latest_question_list'], [q])
 
@@ -66,17 +70,31 @@ class QuestionIndexViewTests(TestCase):
     Displays correct questions if both future and past
     Questions exist in DB
     """
-    create_question("Does the future exits?", 30)
-    q = create_question("Does the past exist?", -30)
+    q1 = create_question("Does the future exits?", 30)
+    q2 = create_question("Does the past exist?", -30)
+    create_choice("Who knows", q1)
+    create_choice("Who knows", q2)
     res = self.client.get(reverse('polls:index'))
-    self.assertQuerysetEqual(res.context['latest_question_list'], [q])
+    self.assertQuerysetEqual(res.context['latest_question_list'], [q2])
 
   def test_multiple_past_questions(self):
     q1 = create_question("Does the past exist?", -30)
     q2 = create_question("Or is time not linear?", -2)
+    create_choice("Who knows", q1)
+    create_choice("Who knows", q2)
     res = self.client.get(reverse('polls:index'))
-    self.assertIs(res.context['latest_question_list'].count(), 2)
     self.assertQuerysetEqual(res.context['latest_question_list'], [q2,q1])
+
+  def test_question_with_choices(self):
+    q = create_question("Is this a test?")
+    create_choice("Yes", q)
+    res = self.client.get(reverse('polls:index'))
+    self.assertQuerysetEqual(res.context['latest_question_list'], [q])
+
+  def test_question_without_choices(self):
+    q = create_question("Is this a test?")
+    res = self.client.get(reverse('polls:index'))
+    self.assertQuerysetEqual(res.context['latest_question_list'], [])
 
 class QuestionDetailViewTests(TestCase):
   def test_future_question(self):
