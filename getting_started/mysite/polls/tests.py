@@ -2,8 +2,20 @@ import datetime as dt
 
 from django.test import TestCase
 from django.utils import timezone as tz
+from django.urls import reverse
 
 from .models import Question
+
+def create_question(question_text, days=0) -> Question:
+  """
+  Creates and returns Question with given question_text and
+  publish at given number of days offset to now
+  question_text: str
+  days: n >= 0 or n < 0
+  """
+  time = tz.now() + dt.timedelta(days=days)
+  return Question.objects.create(question_text=question_text, pub_date=time)
+
 
 class QuestionModelTests(TestCase):
 
@@ -21,3 +33,69 @@ class QuestionModelTests(TestCase):
     time = tz.now() - dt.timedelta(hours=23, minutes=59, seconds=59)
     recent_question = Question(pub_date=time)
     self.assertIs(recent_question.was_published_recently(), True)
+
+
+class QuestionIndexViewTests(TestCase):
+  def test_no_questions(self):
+    """
+    If no Questions exist, displays appropriate message
+    """
+    res = self.client.get(reverse('polls:index'))
+    self.assertEqual(res.status_code, 200)
+    self.assertContains(res, 'No polls available.')
+    self.assertQuerysetEqual(res.context['latest_question_list'], [])
+
+  def test_past_questions(self):
+    """
+    Displays questions from the past
+    """
+    q = create_question("Does the past exist?", -30)
+    res = self.client.get(reverse('polls:index'))
+    self.assertQuerysetEqual(res.context['latest_question_list'], [q])
+
+  def test_future_questions(self):
+    """
+    Does not display questions with pub_date set in the future
+    """
+    create_question("Does the future exits?", 30)
+    res = self.client.get(reverse('polls:index'))
+    self.assertContains(res, 'No polls available.')
+
+  def test_future_and_past_questions(self):
+    """
+    Displays correct questions if both future and past
+    Questions exist in DB
+    """
+    create_question("Does the future exits?", 30)
+    q = create_question("Does the past exist?", -30)
+    res = self.client.get(reverse('polls:index'))
+    self.assertQuerysetEqual(res.context['latest_question_list'], [q])
+
+  def test_multiple_past_questions(self):
+    q1 = create_question("Does the past exist?", -30)
+    q2 = create_question("Or is time not linear?", -2)
+    res = self.client.get(reverse('polls:index'))
+    self.assertIs(res.context['latest_question_list'].count(), 2)
+    self.assertQuerysetEqual(res.context['latest_question_list'], [q2,q1])
+
+class QuestionDetailViewTests(TestCase):
+  def test_future_question(self):
+    q = create_question("Is this question sent by Skynet?", 16425)
+    res = self.client.get(reverse('polls:detail', args=(q.id,)))
+    self.assertEqual(res.status_code, 404)
+
+  def test_past_quesion(self):
+    q = create_question("Did Sarah Connor decide enough is enough?", -16425)
+    res = self.client.get(reverse('polls:detail', args=(q.id,)))
+    self.assertContains(res ,q.question_text)
+
+class QuestionResultsViewTests(TestCase):
+  def test_future_question(self):
+    q = create_question("Is this question sent by Skynet?", 16425)
+    res = self.client.get(reverse('polls:results', args=(q.id,)))
+    self.assertEqual(res.status_code, 404)
+
+  def test_past_quesion(self):
+    q = create_question("Did Sarah Connor decide enough is enough?", -16425)
+    res = self.client.get(reverse('polls:results', args=(q.id,)))
+    self.assertContains(res ,q.question_text)
