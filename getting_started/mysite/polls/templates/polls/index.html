@@ -8,9 +8,11 @@
     {% if latest_question_list %}
       <ul>
         {% for question in latest_question_list %}
+            {% comment %} {% if question.choice_set.all %} {% endcomment %}
           <li>
             <a href="{% url 'polls:detail' question.id %}">{{question.question_text}}</a>
           </li>
+            {% comment %} {% endif %} {% endcomment %}
         {% endfor %}
       </ul>
     {% else %}
