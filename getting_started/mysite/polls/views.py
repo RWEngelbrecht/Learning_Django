@@ -1,7 +1,7 @@
 from django.shortcuts import get_list_or_404, get_object_or_404, render
 from django.http import HttpResponseRedirect
 from django.urls import reverse
-from django.db.models import F
+from django.db.models import F, Q
 from django.views import generic
 from django.utils import timezone as tz
 
@@ -15,14 +15,14 @@ class IndexView(generic.ListView):
   context_object_name = 'latest_question_list'
 
   def get_queryset(self):
-    questions = Question.objects.filter(pub_date__lte=tz.now()).order_by('-pub_date')
-
-    print(questions.choice_set.all())
-    for question in questions:
-      if question.choice_set.all().count() == 0:
-        questions = questions.exclude(pk=question.id)
-
-    return questions[:5]
+    # Did an inner join; can't use distinct() because DISTINCT ON doesn't work with sqlite
+    questions = []
+    [questions.append(question) for question in
+      Question.objects
+        .filter(pub_date__lte=tz.now(), choice__question=F('id'))
+        .order_by('-pub_date')[:5]
+      if question not in questions]
+    return questions
 
 
 class DetailView(generic.DetailView):
