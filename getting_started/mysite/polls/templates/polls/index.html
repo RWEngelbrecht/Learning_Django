@@ -7,24 +7,32 @@
     {% load static %}
     <link href="{% static 'polls/css/style.css' %}" rel="stylesheet">
   </head>
-  <body class="showcase">
-    <div class="container">
-      <h1>
-        Poll questions
-      </h1>
-      {% if latest_question_list %}
-        <ul>
-          {% for question in latest_question_list %}
-              {% comment %} {% if question.choice_set.all %} {% endcomment %}
-            <li>
-              <a href="{% url 'polls:detail' question.id %}">{{question.question_text}}</a>
-            </li>
-              {% comment %} {% endif %} {% endcomment %}
-          {% endfor %}
-        </ul>
-      {% else %}
-        <p>No polls available.</p>
-      {% endif %}
+  <body>
+    <div class="showcase">
+
+      <div class="container">
+        <h1>
+          Poll questions
+        </h1>
+        {% if latest_question_list %}
+          <ul>
+            {% for question in latest_question_list %}
+                {% comment %} {% if question.choice_set.all %} {% endcomment %}
+              <li>
+                <a href="{% url 'polls:detail' question.id %}">{{question.question_text}}</a>
+              </li>
+                {% comment %} {% endif %} {% endcomment %}
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p>No polls available.</p>
+        {% endif %}
+        <div class="showcase-content">
+          {% load static %}
+          <img src="{% static 'polls/img/againstHumanity.png' %}" alt="wtf">
+        </div>
+      </div>
+
     </div>
   </body>
 </html>

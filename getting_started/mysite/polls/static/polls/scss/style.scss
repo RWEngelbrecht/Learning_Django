@@ -1,7 +1,4 @@
-$light-color: #f4f4f4;
-$font-stack: Arial, Helvetica, sans-serif;
-$primary-color: #0e6cff;
-$secondary-color: #ff8700;
+@import 'config';
 
 * {
   box-sizing: border-box;
@@ -20,30 +17,27 @@ a {
 }
 
 .showcase {
-  background-color: $primary-color;
-  color: #fff;
-  height: 600px;
-}
+  @include set-background($primary-color);
+  height: 400px;
 
-.container {
-  max-width: 1100px;
-  padding: 0 30px;
-  margin: 0 auto;
-  overflow: auto;
+  &-content { //compiles to <parent>-content ie showcase-content
+    height: 100%;
+    display:flex;
+    align-items:flex-end;
+    justify-content: flex-end;
 
-  ul {
-    ::marker { //pseudo element
-      color: #ff0000
+    img {
+      width: 250px;
     }
-    list-style-type:decimal-leading-zero;
-    list-style-position: inside;
-  }
-
-  a {
-    color: #fff;
-  }
-
-  li {
-
   }
 }
+
+// .results {
+//   li {
+//     font-size: set-result-font-size()
+//   }
+// }
+
+@import 'mobile';
+@import 'utilities';
+@import 'buttons';

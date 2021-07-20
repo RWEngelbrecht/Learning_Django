@@ -6,17 +6,24 @@
     <title>Learning Django - Results</title>
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'polls/css/style.css' %}">
   </head>
   <body>
-    <h1>{{ question.question_text }}</h1>
-    <ul>
-      {% for choice in question.choice_set.all %}
-        <li>
-          {{ choice.choice_text }} -- {{ choice.votes }} vote{{ choice.votes|pluralize }}
-        </li>
-      {% endfor %}
-    </ul>
-    <a href="{% url 'polls:detail' question.id %}">Vote again?</a>
+    <div>
+      <div class="container">
+        <h1>{{ question.question_text }}</h1>
+        <ul>
+          {% for choice in question.choice_set.all %}
+            <li class="m-1">
+              {{ choice.choice_text }} -- {{ choice.votes }} vote{{ choice.votes|pluralize }}
+            </li>
+          {% endfor %}
+        </ul>
+        <button class="btn-secondary">
+          <a href="{% url 'polls:detail' question.id %}">Vote again?</a>
+        </button>
+      </div>
+      </div>
   </body>
 </html>
