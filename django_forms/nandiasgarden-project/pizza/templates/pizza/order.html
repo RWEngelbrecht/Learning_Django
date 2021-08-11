@@ -3,7 +3,10 @@
   {% csrf_token %}
   {{ pizzaform }}
   <input type="submit" name="" id="" value="Place Order">
-  <h2>{{note}}</h2>
+  <h2>{{ note }}</h2>
+  {% if created_pizza_pk %}
+  <a href="{% url 'edit_order' created_pizza_pk %}">Edit your order</a>
+  {% endif %}
 </form>
 
 <br><br>
